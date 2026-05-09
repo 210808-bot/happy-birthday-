@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Happy Birthday 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --rose:#e0607a;--blush:#f5b8c8;--cream:#fdf6f0;
+  --gold:#c9a96e;--mauve:#6e3550;--lavender:#cdb4e8;
+}
+body{min-height:100vh;overflow:hidden;font-family:'Nunito',sans-serif;user-select:none}
+
+/* ── ANIMATED GRADIENT BG ── */
+.bg{
+  position:fixed;inset:0;z-index:-2;
+  background:linear-gradient(135deg,#ffd6e7 0%,#ffb3d1 25%,#e8c4f5 50%,#c9b8ff 75%,#b8d4ff 100%);
+  background-size:400% 400%;
+  animation:bgShift 10s ease infinite;
+}
+@keyframes bgShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+/* ── FLOATING PARTICLES ── */
+.particles{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.ptcl{
+  position:absolute;animation:floatUp linear infinite;opacity:0;
+  will-change:transform;
+}
+@keyframes floatUp{
+  0%{transform:translateY(105vh) rotate(0deg);opacity:0}
+  8%{opacity:.65}90%{opacity:.65}
+  100%{transform:translateY(-8vh) rotate(400deg);opacity:0}
+}
+
+/* ── MUSIC BUTTON ── */
+.music-btn{
+  position:fixed;top:18px;right:18px;z-index:200;
+  width:46px;height:46px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.55);
+  background:rgba(255,255,255,.28);
+  backdrop-filter:blur(12px);
+  font-size:1.15rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .25s;box-shadow:0 4px 16px rgba(180,90,130,.15);
+}
+.music-btn:hover{background:rgba(255,255,255,.5);transform:scale(1.1)}
+
+/* ── SCENE ── */
+.scene{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:22px;
+}
+
+/* ── ENVELOPE ── */
+.env-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  cursor:pointer;transition:transform .3s;
+}
+.env-wrap:hover{transform:translateY(-6px) scale(1.02)}
+.env-wrap.opening{animation:envAway .7s ease forwards}
+@keyframes envAway{to{transform:translateY(-30px) scale(.88);opacity:0}}
+
+.envelope{
+  width:300px;height:200px;position:relative;
+  filter:drop-shadow(0 18px 36px rgba(160,80,120,.28));
+}
+
+/* flat background rect */
+.env-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(165deg,#fff5f9,#fde4ee);
+  border:1.5px solid rgba(210,140,165,.38);
+  border-radius:4px 4px 10px 10px;
+}
+
+/* all fold triangles share base rules */
+.fold{position:absolute;width:0;height:0}
+
+/*
+  Envelope is 300×200. All four triangles meet at center (150, 100).
+
+  Left fold  → right-pointing triangle: (0,0)-(0,200)-(150,100)
+  Right fold → left-pointing triangle:  (300,0)-(300,200)-(150,100)
+  Bottom fold→ up-pointing triangle:    (0,200)-(300,200)-(150,100)
+  Flap       → down-pointing triangle:  (0,0)-(300,0)-(150,100)  ← animated
+*/
+.fold-l{
+  top:0;left:0;
+  border-top:100px solid transparent;
+  border-bottom:100px solid transparent;
+  border-left:150px solid rgba(235,168,195,.33);
+}
+.fold-r{
+  top:0;right:0;
+  border-top:100px solid transparent;
+  border-bottom:100px solid transparent;
+  border-right:150px solid rgba(235,168,195,.33);
+}
+.fold-b{
+  bottom:0;left:0;
+  border-left:150px solid transparent;
+  border-right:150px solid transparent;
+  border-bottom:100px solid rgba(225,152,183,.28);
+}
+
+/* wax seal sits exactly at the center point (150,100) */
+.seal{
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:42px;height:42px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#e8728a,#b03558);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;
+  box-shadow:0 3px 10px rgba(160,50,80,.4);
+  z-index:4;
+}
+
+/*
+  Flap wrapper: 300px wide, 0 tall, sits at top edge.
+  transform-origin:center top = (150px, 0) — the exact top-center of the envelope.
+  (A width:0 element would rotate around x=0, the left corner — this fixes that.)
+*/
+.env-flap{
+  position:absolute;top:0;left:0;
+  width:300px;height:0;
+  transform-origin:center top;
+  transition:transform .65s cubic-bezier(.4,0,.2,1);
+  z-index:3;
+}
+/* actual triangle lives in ::before so the wrapper can be full-width */
+.env-flap::before{
+  content:'';
+  position:absolute;top:0;left:0;
+  width:0;height:0;
+  border-left:150px solid transparent;
+  border-right:150px solid transparent;
+  border-top:100px solid rgba(235,148,182,.86);
+}
+.opening .env-flap{transform:perspective(700px) rotateX(-175deg)}
+
+.hint{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-size:1.1rem;
+  color:var(--mauve);
+  animation:hintPulse 2.4s ease infinite;
+}
+@keyframes hintPulse{0%,100%{opacity:.55}50%{opacity:1}}
+
+/* ── CARD OVERLAY ── */
+.overlay{
+  position:fixed;inset:0;z-index:50;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(100,40,70,.18);
+  backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;
+  transition:opacity .5s;
+}
+.overlay.show{opacity:1;pointer-events:all}
+
+/* ── CARD ── */
+.card{
+  width:min(700px,96vw);
+  height:min(520px,90vh);
+  background:var(--cream);
+  border-radius:18px;
+  box-shadow:0 32px 80px rgba(100,40,70,.28),0 0 0 1px rgba(200,155,105,.3);
+  position:relative;overflow:hidden;
+  transform:scale(.82) translateY(50px);
+  transition:transform .55s cubic-bezier(.34,1.56,.64,1);
+}
+.overlay.show .card{transform:scale(1) translateY(0)}
+
+/* ── PAGES SLIDER ── */
+.pages{
+  display:flex;height:100%;
+  transition:transform .5s cubic-bezier(.65,0,.35,1);
+}
+.page{
+  min-width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:44px 48px 70px;text-align:center;
+  position:relative;
+}
+
+/* PAGE 1 — Title */
+.p1{background:linear-gradient(160deg,#fff5f8,#feeff6)}
+.big-emoji{font-size:3.8rem;animation:hb 1.6s ease infinite;display:block;margin-bottom:14px}
+@keyframes hb{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.p1 h1{
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+  font-size:clamp(2rem,5.5vw,3.4rem);color:var(--mauve);line-height:1.1;
+  margin-bottom:10px;
+}
+.p1 h1 em{color:var(--rose);font-style:italic}
+.p1 .subtitle{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.1rem;color:var(--rose);margin-bottom:18px;
+}
+.p1 .from{font-size:.88rem;color:rgba(110,53,80,.55);letter-spacing:.1em}
+
+/* PAGE 2 & 3 — Photo */
+.p-photo{background:#fff8fb}
+.photo-frame{
+  width:min(200px,48vw);height:min(160px,28vh);
+  border-radius:12px;overflow:hidden;
+  border:2.5px solid rgba(200,155,105,.35);
+  box-shadow:0 8px 22px rgba(180,95,135,.14);
+  margin-bottom:18px;
+  background:linear-gradient(135deg,#f5dce8,#e8d0f5);
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;position:relative;
+}
+.photo-frame img{width:100%;height:100%;object-fit:cover;display:block}
+.ph-label{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(170,95,130,.5);font-size:.8rem;
+}
+.ph-label span:first-child{font-size:2.2rem}
+.p-photo h2{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:clamp(1.3rem,3.5vw,1.75rem);color:var(--mauve);margin-bottom:8px;
+}
+.p-photo p{
+  font-size:.93rem;color:rgba(100,50,70,.72);line-height:1.75;max-width:380px;
+}
+
+/* PAGE 4 — Closing */
+.p4{background:linear-gradient(160deg,#fff0f8,#f5eeff)}
+.heart-row{font-size:1.4rem;letter-spacing:9px;margin-bottom:20px}
+.p4 h2{
+  font-family:'Cormorant Garamond',serif;font-weight:600;
+  font-size:clamp(1.8rem,4.5vw,2.7rem);color:var(--mauve);margin-bottom:14px;
+}
+.p4 p{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.1rem;color:rgba(100,48,78,.78);line-height:1.85;
+  max-width:420px;margin-bottom:22px;
+}
+.signature{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.4rem;color:var(--rose);
+}
+
+/* ── GOLD LINE DIVIDER ── */
+.gold-line{
+  width:55px;height:1.5px;margin:10px auto 14px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+/* ── NAV ── */
+.nav-area{
+  position:absolute;bottom:18px;left:0;right:0;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+}
+.dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(180,100,140,.22);cursor:pointer;
+  transition:all .3s;
+}
+.dot.on{background:var(--rose);transform:scale(1.35)}
+.arr{
+  position:absolute;top:50%;transform:translateY(-50%);
+  width:34px;height:34px;border-radius:50%;
+  border:1.5px solid rgba(200,135,158,.35);
+  background:rgba(255,255,255,.72);backdrop-filter:blur(4px);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:var(--mauve);transition:all .2s;
+}
+.arr:hover{background:rgba(255,255,255,.95);border-color:var(--rose);transform:translateY(-50%) scale(1.1)}
+.arr:disabled{opacity:.25;cursor:default;pointer-events:none}
+.arr.prev{left:14px}
+.arr.next{right:14px}
+
+/* ── CLOSE BTN ── */
+.close-btn{
+  position:absolute;top:13px;right:13px;
+  width:30px;height:30px;border-radius:50%;
+  border:1.5px solid rgba(200,140,160,.3);
+  background:rgba(255,255,255,.68);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;color:var(--mauve);transition:all .2s;z-index:10;
+}
+.close-btn:hover{background:white;transform:scale(1.1)}
+
+/* ── CONFETTI ── */
+.cfti{
+  position:absolute;border-radius:2px;
+  animation:cfFall linear forwards;pointer-events:none;
+}
+@keyframes cfFall{
+  0%{opacity:1;transform:translateY(-10px) rotate(0)}
+  100%{opacity:0;transform:translateY(540px) rotate(720deg)}
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="particles" id="ptcls"></div>
+
+<!-- 🎵 MUSIC — replace the src with your own MP3 link or YouTube audio-only link -->
+<audio id="bgm" loop preload="none">
+  <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" type="audio/mpeg">
+</audio>
+<button class="music-btn" id="mbtn" title="Toggle music">🎵</button>
+
+<!-- LANDING SCENE -->
+<div class="scene" id="scene">
+  <div class="env-wrap" id="envW" onclick="openCard()">
+    <div class="envelope">
+      <div class="env-bg"></div>
+      <div class="fold fold-l"></div>
+      <div class="fold fold-r"></div>
+      <div class="fold fold-b"></div>
+      <div class="seal">💌</div>
+      <div class="env-flap"></div>
+    </div>
+    <div class="hint">click to open your gift ✨</div>
+  </div>
+</div>
+
+<!-- CARD OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="card" id="card">
+    <button class="close-btn" onclick="closeCard()">✕</button>
+
+    <div class="pages" id="pages">
+
+      <!-- PAGE 1: TITLE -->
+      <div class="page p1">
+        <span class="big-emoji">🎂</span>
+        <!-- ✏️ Change "My Love" to her name! -->
+        <h1>Happy Birthday,<br><em>My Love</em></h1>
+        <div class="gold-line"></div>
+        <p class="subtitle">Today is all about you ✨</p>
+        <p class="from">with all my heart 💕</p>
+      </div>
+
+      <!-- PAGE 2: PHOTO + MESSAGE -->
+      <div class="page p-photo">
+        <div class="photo-frame">
+          <!--
+            📸 TO ADD A PHOTO:
+            Replace everything inside .photo-frame with:
+            <img src="YOUR_PHOTO_URL" alt="Us">
+            or if using a local file: <img src="photo1.jpg" alt="Us">
+          -->
+          <div class="ph-label"><span>📸</span><span>add your photo here</span></div>
+        </div>
+        <!-- ✏️ Change the heading & message below -->
+        <h2>Every moment with you</h2>
+        <div class="gold-line"></div>
+        <p>Being with you feels like finding home. Every laugh, every adventure, every quiet moment — I cherish them all.</p>
+      </div>
+
+      <!-- PAGE 3: PHOTO + MESSAGE -->
+      <div class="page p-photo">
+        <div class="photo-frame">
+          <!--
+            📸 TO ADD A PHOTO:
+            <img src="YOUR_SECOND_PHOTO_URL" alt="Us">
+          -->
+          <div class="ph-label"><span>📸</span><span>add your photo here</span></div>
+        </div>
+        <!-- ✏️ Change the heading & message below -->
+        <h2>My favourite memories 🌸</h2>
+        <div class="gold-line"></div>
+        <p>From our silly late-night conversations to the big moments we've shared — you make everything brighter just by being you.</p>
+      </div>
+
+      <!-- PAGE 4: CLOSING -->
+      <div class="page p4">
+        <div class="heart-row">🌸 💕 🌸</div>
+        <!-- ✏️ Personalise this page -->
+        <h2>Here's to you</h2>
+        <div class="gold-line"></div>
+        <p>On your special day, I hope you feel as loved as you make me feel every single day. You deserve the world — and I'll spend every day trying to give it to you.</p>
+        <!-- ✏️ Sign off below -->
+        <div class="signature">— Your Name 💕</div>
+      </div>
+
+    </div><!-- /pages -->
+
+    <!-- NAV -->
+    <div class="nav-area">
+      <button class="arr prev" id="prev" onclick="nav(-1)" disabled>‹</button>
+      <div class="dot on" onclick="go(0)"></div>
+      <div class="dot"    onclick="go(1)"></div>
+      <div class="dot"    onclick="go(2)"></div>
+      <div class="dot"    onclick="go(3)"></div>
+      <button class="arr next" id="next" onclick="nav(1)">›</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PARTICLES ──
+const EMOJIS=['🌸','💕','✨','🌺','💫','🌷','❤️','🦋'];
+const PC=document.getElementById('ptcls');
+function mkParticle(){
+  const e=document.createElement('div');
+  e.className='ptcl';
+  e.textContent=EMOJIS[Math.random()*EMOJIS.length|0];
+  e.style.cssText=`left:${Math.random()*100}vw;font-size:${.8+Math.random()*.9}rem;animation-duration:${8+Math.random()*8}s;animation-delay:${Math.random()*8}s`;
+  PC.appendChild(e);
+  setTimeout(()=>e.remove(),(18+Math.random()*8)*1000);
+}
+for(let i=0;i<14;i++) mkParticle();
+setInterval(mkParticle,1600);
+
+// ── MUSIC ──
+const BGM=document.getElementById('bgm');
+const MB=document.getElementById('mbtn');
+let playing=false;
+MB.onclick=()=>{
+  if(playing){BGM.pause();MB.textContent='🔇';playing=false}
+  else{BGM.play().catch(()=>{});MB.textContent='🎵';playing=true}
+};
+
+// ── NAVIGATION ──
+let cur=0;const TOTAL=4;
+const PG=document.getElementById('pages');
+const DOTS=[...document.querySelectorAll('.dot')];
+const PREV=document.getElementById('prev');
+const NEXT=document.getElementById('next');
+function go(n){
+  cur=n;
+  PG.style.transform=`translateX(-${cur*100}%)`;
+  DOTS.forEach((d,i)=>d.classList.toggle('on',i===cur));
+  PREV.disabled=cur===0;NEXT.disabled=cur===TOTAL-1;
+}
+function nav(d){const n=cur+d;if(n>=0&&n<TOTAL)go(n)}
+
+// touch swipe
+let tx=0;
+PG.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+PG.addEventListener('touchend',e=>{const dx=tx-e.changedTouches[0].clientX;if(Math.abs(dx)>44)nav(dx>0?1:-1)});
+
+// ── OPEN / CLOSE ──
+const EW=document.getElementById('envW');
+const OV=document.getElementById('overlay');
+function openCard(){
+  EW.classList.add('opening');
+  if(!playing){BGM.play().catch(()=>{});MB.textContent='🎵';playing=true}
+  setTimeout(()=>{
+    EW.style.visibility='hidden';
+    OV.classList.add('show');
+    go(0);confetti();
+  },720);
+}
+function closeCard(){
+  OV.classList.remove('show');
+  setTimeout(()=>{
+    EW.style.visibility='visible';
+    EW.classList.remove('opening');
+    EW.style.animation='none';
+    requestAnimationFrame(()=>EW.style.animation='');
+  },520);
+}
+
+// ── CONFETTI ──
+const COLS=['#e8728a','#c9a96e','#d4b8e0','#ffb3d1','#a0c4ff','#f5c242'];
+function confetti(){
+  const C=document.getElementById('card');
+  for(let i=0;i<22;i++){
+    const el=document.createElement('div');
+    el.className='cfti';
+    const sz=5+Math.random()*7;
+    const dur=2.5+Math.random()*2;
+    el.style.cssText=`left:${Math.random()*100}%;top:0;width:${sz}px;height:${sz}px;background:${COLS[Math.random()*COLS.length|0]};border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${dur}s;animation-delay:${Math.random()*1.4}s`;
+    C.appendChild(el);
+    setTimeout(()=>el.remove(),(dur+2)*1000);
+  }
+}
+
+// keyboard nav
+document.addEventListener('keydown',e=>{
+  if(OV.classList.contains('show')){
+    if(e.key==='ArrowLeft')nav(-1);
+    if(e.key==='ArrowRight')nav(1);
+    if(e.key==='Escape')closeCard();
+  }
+});
+</script>
+</body>
+</html>
