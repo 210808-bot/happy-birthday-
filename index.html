@@ -405,6 +405,7 @@ body{min-height:100vh;overflow:hidden;font-family:'Nunito',sans-serif;user-selec
       <div class="dot"    onclick="go(1)"></div>
       <div class="dot"    onclick="go(2)"></div>
       <div class="dot"    onclick="go(3)"></div>
+      <div class="dot"    onclick="go(4)"></div>
       <button class="arr next" id="next" onclick="nav(1)">›</button>
     </div>
   </div>
@@ -435,7 +436,7 @@ MB.onclick=()=>{
 };
 
 // ── NAVIGATION ──
-let cur=0;const TOTAL=4;
+let cur=0;const TOTAL=5;
 const PG=document.getElementById('pages');
 const DOTS=[...document.querySelectorAll('.dot')];
 const PREV=document.getElementById('prev');
